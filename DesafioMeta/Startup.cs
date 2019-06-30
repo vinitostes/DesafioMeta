@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DesafioMeta.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,11 +11,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace DesafioMeta
 {
     public class Startup
     {
+        public IServiceCollection Services;
+        public IServiceProvider ServiceProvider;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -26,6 +31,17 @@ namespace DesafioMeta
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new Info { Title = "Desafio  Meta", Version = "v1" });
+            });
+
+            services.AddScoped<IArrayAppService, ArrayAppService>();
+
+            Services = services;
+            ServiceProvider = Services.BuildServiceProvider();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +59,13 @@ namespace DesafioMeta
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json",
+                    "DesafioMeta Service");
+            });
         }
     }
 }
